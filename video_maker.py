@@ -48,7 +48,7 @@ TAIL = 0.35
 KEY_SYMBOLS = {"cmd": "⌘", "command": "⌘", "shift": "⇧"}
 
 # 行頭に置かない文字
-NO_LINE_START = set("、。，．・：；？！ー」』）】〉》ぁぃぅぇぉっゃゅょァィゥェォッャュョ")
+NO_LINE_START = set("、。，．・：；？！?!…☆★♪ー」』）】〉》ぁぃぅぇぉっゃゅょァィゥェォッャュョ")
 
 
 # ────────────────────────────── 設定・フォント ──────────────────────────────
@@ -428,7 +428,7 @@ def wrap_chars(chars, font, max_w):
                 tokens.append(buf)
                 buf = []
             tokens.append("\n")
-        elif re.match(r"[A-Za-z0-9+\-_.%/]", ch):
+        elif re.match(r"[A-Za-z0-9+\-_.%/ァ-ヴ]", ch) or (ch == "ー" and buf and re.match(r"[ァ-ヴ]", buf[-1][0])):
             buf.append((ch, col))
         else:
             if buf:

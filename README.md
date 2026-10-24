@@ -1,6 +1,30 @@
 # youtube-video-maker
 
-「神ショートカット」解説のショート動画（YouTube Shorts / X 向け 1080x1920）を自動生成するツールです。
+YouTube Shorts / X 向けの縦型動画（1080x1920）を自動生成するツールです。
+
+- `story_maker.py`: 犬キャラのショートアニメ（ワン高物語）
+- `video_maker.py`: 「神ショートカット」解説動画
+
+## 犬キャラのショートアニメ（story_maker.py）
+
+```bash
+python story_maker.py --story stories/wan_high_ep1.json
+```
+
+キャラクター・背景はすべてプログラムで描画します（`toon.py`）。台本 JSON は「ショット」の並びで、
+各ショットに背景（`bg`）、登場キャラ（`cast`：位置・表情・ポーズ・動き）、セリフ（`lines`）を書きます。
+セリフごとに `set` で表情やポーズを変えたり、`fx` で演出（`focus` 集中線、`shake` 揺れ、`flash`、`impact:文字`、`confetti` 紙吹雪）を入れられます。
+
+| 種類 | 使える値 |
+| --- | --- |
+| キャラ | kotaro（ダックス）, leon（プードル）, gou（ピットブル）, pom1〜3（ポメのチア部）, yanki1〜2（不良） |
+| 背景 | school_gate, hallway, sunset, stage, results |
+| 表情 | normal, happy, shy, sad, shocked, determined, cool, soft, wink, moved |
+| ポーズ | stand, shy, point, crossed, notebook, flyer, trash, fist, bump, cheer_a/b, wave_a/b, banzai |
+| 動き | idle, walk, jump, tremble, cheer, wave |
+| BGM | normal, tense, happy |
+
+## ショートカット解説動画（video_maker.py）
 
 - 台本: JSON で用意するか、テーマを渡して Claude に書かせる
 - 映像: キーキャップが押し込まれるアニメーション、焼き込み字幕、進捗バー

@@ -1,0 +1,582 @@
+{
+  "slug": "wan-high-ep1",
+  "youtube_title": "犬の高校で生徒会長選挙！シャイなダックスが立候補した結果… #shorts",
+  "youtube_description": "犬たちが通うワンダフル高校で、生徒会長選挙が始まった！\nシャイなミニチュアダックスのコタロウと、不良に大人気のピットブル・ゴウの一騎打ち。最後にまさかの展開が…\nワン高物語 第1話",
+  "tags": [
+    "犬",
+    "ダックスフンド",
+    "ピットブル",
+    "プードル",
+    "ポメラニアン",
+    "ショートアニメ",
+    "学園",
+    "ワン高物語"
+  ],
+  "thumbnail": {
+    "bg": "school_gate",
+    "zoom": [
+      1.0,
+      1.0
+    ],
+    "cast": [
+      {
+        "id": "gou",
+        "x": 760,
+        "y": 1330,
+        "pose": "crossed",
+        "expr": "cool",
+        "scale": 1.15
+      },
+      {
+        "id": "kotaro",
+        "x": 330,
+        "y": 1380,
+        "pose": "shy",
+        "expr": "shy",
+        "scale": 1.35
+      }
+    ],
+    "caption": "ワン高 生徒会長選挙",
+    "title": "シャイな犬が\n**生徒会長**に!?"
+  },
+  "shots": [
+    {
+      "bg": "school_gate",
+      "bgm": "normal",
+      "caption": "ワン高 生徒会長選挙",
+      "zoom": [
+        1.0,
+        1.06
+      ],
+      "cast": [
+        {
+          "id": "kotaro",
+          "x": 540,
+          "pose": "shy",
+          "expr": "shy",
+          "anim": "walk",
+          "enter": "left",
+          "scale": 1.25
+        }
+      ],
+      "lines": [
+        {
+          "who": "narrator",
+          "text": "ここは犬たちが通う、ワンダフル高校。"
+        },
+        {
+          "who": "narrator",
+          "text": "今日から、生徒会長選挙が始まる！"
+        }
+      ]
+    },
+    {
+      "bg": "hallway",
+      "bgm": "normal",
+      "cast": [
+        {
+          "id": "kotaro",
+          "x": 300,
+          "pose": "shy",
+          "expr": "shy",
+          "scale": 1.2
+        },
+        {
+          "id": "leon",
+          "x": 780,
+          "pose": "point",
+          "expr": "wink",
+          "enter": "right",
+          "flip": true,
+          "scale": 1.2
+        }
+      ],
+      "lines": [
+        {
+          "who": "leon",
+          "text": "コタロウ、お前が出ろって！ぜってーウケるから☆",
+          "say": "コタロウ、お前が出ろって！ぜってーウケるから！"
+        },
+        {
+          "who": "kotaro",
+          "text": "む、無理だよ…ぼくなんか…",
+          "say": "む、むりだよ。ぼくなんか。",
+          "set": {
+            "kotaro": {
+              "anim": "tremble"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "bg": "school_gate",
+      "bgm": "normal",
+      "zoom": [
+        1.0,
+        1.08
+      ],
+      "focus_xy": [
+        540,
+        1000
+      ],
+      "cast": [
+        {
+          "id": "yanki1",
+          "x": 250,
+          "y": 1330,
+          "pose": "crossed",
+          "expr": "cool",
+          "scale": 1.05
+        },
+        {
+          "id": "yanki2",
+          "x": 830,
+          "y": 1330,
+          "pose": "crossed",
+          "expr": "cool",
+          "scale": 1.05
+        },
+        {
+          "id": "gou",
+          "x": 540,
+          "y": 1400,
+          "pose": "crossed",
+          "expr": "cool",
+          "enter": "bottom",
+          "scale": 1.15
+        },
+        {
+          "id": "pom1",
+          "x": 140,
+          "y": 1560,
+          "pose": "cheer_a",
+          "expr": "happy",
+          "scale": 0.95,
+          "hidden": true
+        },
+        {
+          "id": "pom2",
+          "x": 940,
+          "y": 1560,
+          "pose": "cheer_a",
+          "expr": "happy",
+          "scale": 0.95,
+          "flip": true,
+          "hidden": true
+        }
+      ],
+      "lines": [
+        {
+          "who": "narrator",
+          "text": "対抗馬は、不良たちに大人気のピットブル、ゴウ。",
+          "fx": [
+            "focus"
+          ]
+        },
+        {
+          "who": "poms",
+          "text": "ゴー！ゴー！ゴウさまー！",
+          "say": "ゴーゴー、ゴウさまー！",
+          "set": {
+            "pom1": {
+              "hidden": false,
+              "anim": "cheer"
+            },
+            "pom2": {
+              "hidden": false,
+              "anim": "cheer"
+            }
+          }
+        },
+        {
+          "who": "gou",
+          "text": "…フン。",
+          "say": "ふん。"
+        }
+      ]
+    },
+    {
+      "bg": "school_gate",
+      "bgm": "normal",
+      "cast": [
+        {
+          "id": "leon",
+          "x": 320,
+          "pose": "flyer",
+          "expr": "happy",
+          "anim": "jump",
+          "scale": 1.15
+        },
+        {
+          "id": "kotaro",
+          "x": 760,
+          "pose": "flyer",
+          "expr": "shy",
+          "scale": 1.2,
+          "flip": true
+        }
+      ],
+      "lines": [
+        {
+          "who": "leon",
+          "text": "コタロウをよろしくー☆",
+          "say": "コタロウを、よろしくー！"
+        },
+        {
+          "who": "narrator",
+          "text": "でも、チラシは誰にも受け取ってもらえなかった。",
+          "set": {
+            "kotaro": {
+              "expr": "sad"
+            },
+            "leon": {
+              "anim": "idle",
+              "expr": "shocked"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "bg": "sunset",
+      "bgm": "normal",
+      "zoom": [
+        1.0,
+        1.12
+      ],
+      "focus_xy": [
+        760,
+        1150
+      ],
+      "cast": [
+        {
+          "id": "kotaro",
+          "x": 400,
+          "pose": "trash",
+          "expr": "normal",
+          "scale": 1.15
+        },
+        {
+          "id": "gou",
+          "x": 1000,
+          "y": 1300,
+          "pose": "crossed",
+          "expr": "soft",
+          "scale": 0.8,
+          "flip": true
+        }
+      ],
+      "lines": [
+        {
+          "who": "narrator",
+          "text": "放課後。コタロウは今日も、ひとりで校庭のゴミを拾っていた。"
+        },
+        {
+          "who": "narrator",
+          "text": "その姿を、誰かがじっと見ていた。",
+          "pause": 0.5
+        }
+      ]
+    },
+    {
+      "bg": "stage",
+      "bgm": "normal",
+      "spot": 420,
+      "zoom": [
+        1.0,
+        1.05
+      ],
+      "focus_xy": [
+        420,
+        1000
+      ],
+      "cast": [
+        {
+          "id": "kotaro",
+          "x": 420,
+          "pose": "shy",
+          "expr": "shy",
+          "anim": "tremble",
+          "scale": 1.1
+        },
+        {
+          "id": "gou",
+          "x": 860,
+          "pose": "crossed",
+          "expr": "cool",
+          "scale": 1.0
+        }
+      ],
+      "lines": [
+        {
+          "who": "kotaro",
+          "text": "ぼ、ぼくは…目立たないけど…",
+          "say": "ぼ、ぼくは。めだたないけど。"
+        },
+        {
+          "who": "kotaro",
+          "text": "みんなの困りごとを、全部このノートに書いてきました！",
+          "fx": [
+            "flash",
+            "focus"
+          ],
+          "set": {
+            "kotaro": {
+              "pose": "notebook",
+              "expr": "determined",
+              "anim": "idle"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "bg": "stage",
+      "bgm": "tense",
+      "spot": 760,
+      "cast": [
+        {
+          "id": "kotaro",
+          "x": 420,
+          "pose": "notebook",
+          "expr": "determined",
+          "scale": 1.1
+        },
+        {
+          "id": "gou",
+          "x": 780,
+          "pose": "stand",
+          "expr": "cool",
+          "scale": 1.0,
+          "enter": "right"
+        }
+      ],
+      "lines": [
+        {
+          "who": "gou",
+          "text": "俺は、立候補を辞退する。",
+          "say": "おれは、りっこうほを、じたいする。"
+        },
+        {
+          "who": "kotaro",
+          "text": "えっ…！？",
+          "say": "えっ！",
+          "fx": [
+            "impact:辞退!?",
+            "shake",
+            "focus"
+          ],
+          "set": {
+            "kotaro": {
+              "expr": "shocked",
+              "pose": "stand"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "bg": "stage",
+      "bgm": "tense",
+      "spot": 540,
+      "zoom": [
+        1.0,
+        1.06
+      ],
+      "focus_xy": [
+        540,
+        1100
+      ],
+      "cast": [
+        {
+          "id": "gou",
+          "x": 540,
+          "y": 1960,
+          "pose": "stand",
+          "expr": "soft",
+          "scale": 1.75
+        }
+      ],
+      "lines": [
+        {
+          "who": "gou",
+          "text": "毎朝ゴミを拾うお前を、ずっと見てた。",
+          "say": "まいあさ、ゴミをひろうおまえを、ずっとみてた。"
+        },
+        {
+          "who": "gou",
+          "text": "お前を引っ張り出すために、出たんだよ。",
+          "say": "おまえを、ひっぱりだすために、でたんだよ。"
+        }
+      ],
+      "fg": false
+    },
+    {
+      "bg": "stage",
+      "bgm": "normal",
+      "spot": 540,
+      "zoom": [
+        1.0,
+        1.04
+      ],
+      "focus_xy": [
+        540,
+        1100
+      ],
+      "cast": [
+        {
+          "id": "kotaro",
+          "x": 540,
+          "y": 1940,
+          "pose": "stand",
+          "expr": "moved",
+          "scale": 1.8
+        }
+      ],
+      "lines": [
+        {
+          "who": "kotaro",
+          "text": "ゴウくん…！",
+          "say": "ゴウくん！",
+          "pause": 0.4
+        }
+      ],
+      "fg": false
+    },
+    {
+      "bg": "stage",
+      "bgm": "normal",
+      "cast": [
+        {
+          "id": "yanki1",
+          "x": 320,
+          "y": 1330,
+          "pose": "fist",
+          "expr": "happy",
+          "anim": "jump",
+          "scale": 1.05
+        },
+        {
+          "id": "yanki2",
+          "x": 760,
+          "y": 1330,
+          "pose": "fist",
+          "expr": "happy",
+          "anim": "jump",
+          "scale": 1.05,
+          "flip": true
+        }
+      ],
+      "lines": [
+        {
+          "who": "yanki",
+          "text": "ゴウさんが言うなら、コタロウに一票っす！",
+          "say": "ゴウさんがいうなら、コタロウにいっぴょうっす！"
+        }
+      ]
+    },
+    {
+      "bg": "results",
+      "bgm": "happy",
+      "sfx": [
+        "applause"
+      ],
+      "cast": [
+        {
+          "id": "gou",
+          "x": 820,
+          "y": 1360,
+          "pose": "crossed",
+          "expr": "soft",
+          "scale": 1.0
+        },
+        {
+          "id": "leon",
+          "x": 250,
+          "y": 1360,
+          "pose": "point",
+          "expr": "wink",
+          "scale": 1.0
+        },
+        {
+          "id": "kotaro",
+          "x": 540,
+          "y": 1430,
+          "pose": "cheer_b",
+          "expr": "moved",
+          "anim": "jump",
+          "scale": 1.15
+        },
+        {
+          "id": "pom1",
+          "x": 110,
+          "y": 1500,
+          "pose": "cheer_a",
+          "expr": "happy",
+          "anim": "cheer",
+          "scale": 0.85
+        },
+        {
+          "id": "pom3",
+          "x": 970,
+          "y": 1500,
+          "pose": "cheer_a",
+          "expr": "happy",
+          "anim": "cheer",
+          "scale": 0.85,
+          "flip": true
+        }
+      ],
+      "lines": [
+        {
+          "who": "poms",
+          "text": "コタロウ！コタロウ！",
+          "say": "コタロウ！コタロウ！",
+          "fx": [
+            "confetti"
+          ]
+        },
+        {
+          "who": "leon",
+          "text": "参謀のオレのおかげっしょ☆",
+          "say": "さんぼうの、オレのおかげっしょ！"
+        }
+      ]
+    },
+    {
+      "bg": "results",
+      "bgm": "happy",
+      "zoom": [
+        1.0,
+        1.03
+      ],
+      "endcard": "第1話 おわり\nフォローで続きを見る",
+      "cast": [
+        {
+          "id": "kotaro",
+          "x": 250,
+          "pose": "bump",
+          "expr": "happy",
+          "scale": 1.0
+        },
+        {
+          "id": "gou",
+          "x": 840,
+          "pose": "bump",
+          "expr": "soft",
+          "scale": 1.0,
+          "flip": true
+        }
+      ],
+      "lines": [
+        {
+          "who": "narrator",
+          "text": "シャイな会長の、新しい毎日が始まる。",
+          "pause": 0.3
+        }
+      ],
+      "hold": 4.5
+    }
+  ]
+}
