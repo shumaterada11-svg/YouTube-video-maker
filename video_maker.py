@@ -7,7 +7,7 @@
   # テーマだけ渡して Claude に台本を書かせてから動画を作る（ANTHROPIC_API_KEY が必要）
   python video_maker.py --topic "Chromeが爆速になる神ショートカット5選"
 
-出力: output/<名前>/ に video.mp4・thumbnail.png・youtube.txt・script.json
+出力: デスクトップの「YouTube動画」/<名前>/ に（Mac 以外は output/<名前>/） video.mp4・thumbnail.png・youtube.txt・script.json
 """
 import argparse
 import asyncio
@@ -184,6 +184,23 @@ def generate_script(topic, anthropic_key):
         raise RuntimeError("Claude が台本の生成を断りました。テーマを変えてください。")
     text = next(b.text for b in response.content if b.type == "text")
     return json.loads(text)
+
+
+# ────────────────────────────── 保存先 ──────────────────────────────
+
+def default_output_dir():
+    """Mac はデスクトップの「YouTube動画」フォルダ、それ以外はリポジトリの output/"""
+    if os.environ.get("VIDEO_OUTPUT_DIR"):
+        return os.path.expanduser(os.environ["VIDEO_OUTPUT_DIR"])
+    if sys.platform == "darwin":
+        return os.path.expanduser("~/Desktop/YouTube動画")
+    return os.path.join(BASE_DIR, "output")
+
+
+def show_in_finder(path):
+    """Mac では完成した動画を Finder で選択した状態で開く"""
+    if sys.platform == "darwin":
+        subprocess.run(["open", "-R", path], check=False)
 
 
 # ────────────────────────────── 音声合成 ──────────────────────────────
@@ -866,6 +883,7 @@ def make_video(script, out_root, engine="auto", voice="ja-JP-NanamiNeural", use_
     render_thumbnail(script, os.path.join(out_dir, "thumbnail.png"))
     write_youtube_meta(script, os.path.join(out_dir, "youtube.txt"))
     print(f"\n🎉 完成: {video_path}")
+    show_in_finder(video_path)
     return video_path
 
 
@@ -874,7 +892,7 @@ def main():
     src = ap.add_mutually_exclusive_group(required=True)
     src.add_argument("--script", help="台本JSONのパス")
     src.add_argument("--topic", help="テーマ（Claude が台本を生成）")
-    ap.add_argument("--out", default=os.path.join(BASE_DIR, "output"), help="出力先フォルダ")
+    ap.add_argument("--out", default=default_output_dir(), help="出力先フォルダ（Mac の既定はデスクトップの「YouTube動画」）")
     ap.add_argument("--tts", default="auto", choices=["auto", "edge", "openjtalk"], help="音声合成エンジン")
     ap.add_argument("--voice", default="ja-JP-NanamiNeural", help="edge-tts の声（例: ja-JP-KeitaNeural）")
     ap.add_argument("--bgm", help="BGMに使う音声ファイル（省略時は自動生成のBGM）")

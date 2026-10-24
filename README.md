@@ -85,7 +85,7 @@ python video_maker.py --topic "Excelが3倍速くなる神ショートカット5
 
 | オプション | 内容 |
 | --- | --- |
-| `--out DIR` | 出力先（既定: `output/`） |
+| `--out DIR` | 出力先（既定: Mac はデスクトップの「YouTube動画」、それ以外は `output/`） |
 | `--tts auto\|edge\|openjtalk` | 音声合成エンジン |
 | `--voice ja-JP-KeitaNeural` | edge-tts の声（既定は女性の `ja-JP-NanamiNeural`） |
 | `--bgm FILE` / `--no-bgm` | BGM を差し替える／付けない |

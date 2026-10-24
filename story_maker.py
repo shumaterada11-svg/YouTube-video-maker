@@ -3,7 +3,7 @@
 使い方:
   python story_maker.py --story stories/wan_high_ep1.json
 
-出力: output/<slug>/ に video.mp4・thumbnail.png・youtube.txt
+出力: デスクトップの「YouTube動画」/<slug>/ に（Mac 以外は output/<slug>/） video.mp4・thumbnail.png・youtube.txt
 """
 import argparse
 import json
@@ -583,7 +583,7 @@ def render_thumbnail(story, renderer, voice, path):
 def main():
     ap = argparse.ArgumentParser(description="犬キャラのショートアニメを生成")
     ap.add_argument("--story", help="台本JSONのパス")
-    ap.add_argument("--out", default=os.path.join(BASE_DIR, "output"))
+    ap.add_argument("--out", default=vm.default_output_dir(), help="出力先フォルダ（Mac の既定はデスクトップの「YouTube動画」）")
     ap.add_argument("--tts", default="auto", choices=["auto", "voicevox", "edge", "openjtalk"],
                     help="auto は VOICEVOX が起動していれば VOICEVOX、なければ edge-tts → pyopenjtalk の順に使う")
     ap.add_argument("--list-voices", action="store_true", help="VOICEVOX で使える声の一覧を表示")
@@ -639,6 +639,7 @@ def main():
         with open(meta_path, "a", encoding="utf-8") as f:
             f.write("\n【音声】説明文に必ず入れてください\n" + "\n".join(f"VOICEVOX:{n}" for n in voice.credits) + "\n")
     print(f"\n🎉 完成: {video_path}")
+    vm.show_in_finder(video_path)
 
 
 if __name__ == "__main__":
