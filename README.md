@@ -24,6 +24,18 @@ python story_maker.py --story stories/wan_high_ep1.json
 | 動き | idle, walk, jump, tremble, cheer, wave |
 | BGM | normal, tense, happy |
 
+### Gemini で作った絵・動画を使う
+
+ブラウザ版 Gemini などで作った絵や動画を、場面ごとに差し替えられます。
+出力先の `素材` フォルダ（Mac なら `デスクトップ/YouTube動画/<slug>/素材/`）に `shot01.png`、`shot07.mp4` のような名前で置くと、自動で使われます（`--assets` で別のフォルダも指定可）。
+
+- 番号は台本の場面の順番（1から）。同じ番号なら動画を優先します。
+- `shot11_2.png` のように `_番号` を付けると、その場面の何番目のセリフから切り替えるかを指定できます。
+- 素材がない場面は、これまで通りプログラムの絵で描きます。字幕・声・BGM・演出はどちらでも付きます。
+- `thumbnail.png` を置くと、サムネイルの背景に使います。
+
+第1話の素材づくりの手順とプロンプトは `gemini_prompts/wan_high_ep1.md` にあります。
+
 ### 声の設定
 
 声は次の順で自動的に選ばれます（`--tts` で固定も可能）。

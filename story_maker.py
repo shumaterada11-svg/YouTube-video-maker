@@ -13,7 +13,7 @@ import re
 import subprocess
 
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 import toon
 import video_maker as vm
@@ -335,10 +335,120 @@ class Shot:
         return None
 
 
+# ────────────────────────────── 外部素材（Gemini などで作った絵・動画） ──────────────────────────────
+
+VIDEO_EXTS = (".mp4", ".mov", ".webm", ".m4v")
+IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".webp")
+
+
+def probe_video(path):
+    """動画の長さ（秒）と縦横サイズを ffmpeg の出力から読む"""
+    r = subprocess.run([vm.ffmpeg_exe(), "-i", path], capture_output=True, text=True)
+    m = re.search(r"Duration: (\d+):(\d+):([\d.]+)", r.stderr)
+    dur = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3)) if m else 8.0
+    m = re.search(r"Video: .*?(\d{2,5})x(\d{2,5})", r.stderr)
+    size = (int(m.group(1)), int(m.group(2))) if m else (W, H)
+    return dur, size
+
+
+class Assets:
+    """素材フォルダの shot01.png / shot07.mp4 / shot11_2.png（2つ目のセリフから切り替え）などを場面に割り当てる"""
+
+    def __init__(self, folder):
+        self.folder = folder
+        self.files = {}  # (場面番号, 何番目のセリフから) -> パス（動画を優先）
+        if folder and os.path.isdir(folder):
+            for name in sorted(os.listdir(folder)):
+                m = re.fullmatch(r"shot(\d+)(?:_(\d+))?(\.\w+)", name, re.I)
+                ext = m.group(3).lower() if m else ""
+                if not m or ext not in VIDEO_EXTS + IMAGE_EXTS:
+                    continue
+                key = (int(m.group(1)), int(m.group(2) or 1))
+                if key not in self.files or ext in VIDEO_EXTS:
+                    self.files[key] = os.path.join(folder, name)
+
+    def thumbnail(self):
+        for ext in IMAGE_EXTS:
+            path = os.path.join(self.folder or "", "thumbnail" + ext)
+            if self.folder and os.path.exists(path):
+                return path
+        return None
+
+    def entries(self, shot):
+        """[(開始時刻, 終了時刻, パス), ...]"""
+        keys = sorted(k for k in self.files if k[0] == getattr(shot, "num", None))
+        out = []
+        for i, k in enumerate(keys):
+            start = 0.0 if k[1] <= 1 or k[1] > len(shot.lines) else shot.lines[k[1] - 1]["t0"]
+            out.append([start, shot.duration, self.files[k]])
+        out.sort()
+        for i in range(len(out) - 1):
+            out[i][1] = out[i + 1][0]
+        if out:
+            out[0][0] = 0.0
+        return out
+
+
+def fit_filter(size):
+    """縦長ならそのまま切り抜き、横長ならぼかした背景の上に重ねて 1080x1920 にする"""
+    w, h = size
+    if w / h < 0.7:
+        return f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}"
+    return (f"split[a][b];[a]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
+            f"boxblur=30:3,eq=brightness=-0.08[bg];[b]scale={W}:-2[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2")
+
+
+def fit_image(img):
+    img = img.convert("RGB")
+    w, h = img.size
+    cover = max(W / w, H / h)
+    bg = img.resize((int(w * cover) + 1, int(h * cover) + 1), Image.LANCZOS)
+    bg = bg.crop(((bg.width - W) // 2, (bg.height - H) // 2, (bg.width - W) // 2 + W, (bg.height - H) // 2 + H))
+    if w / h < 0.7:
+        return bg.convert("RGBA")
+    bg = bg.filter(ImageFilter.GaussianBlur(30)).point(lambda v: int(v * 0.9))
+    fg = img.resize((W, int(h * W / w)), Image.LANCZOS)
+    bg.paste(fg, (0, (H - fg.height) // 2))
+    return bg.convert("RGBA")
+
+
+class ClipReader:
+    """動画素材を 1080x1920・30fps で1フレームずつ読む（短い動画は少しゆっくり再生し、最後のコマで止める）"""
+
+    def __init__(self, path, span):
+        dur, size = probe_video(path)
+        slow = min(1.6, max(1.0, span / max(dur, 0.1)))
+        vf = f"{fit_filter(size)},setpts={slow:.3f}*PTS,fps={FPS}"
+        self.proc = subprocess.Popen([vm.ffmpeg_exe(), "-v", "error", "-i", path, "-vf", vf, "-an",
+                                      "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
+                                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        self.n = 0
+        self.last = Image.new("RGBA", (W, H), (0, 0, 0, 255))
+
+    def frame(self, idx):
+        while self.n <= idx and self.proc:
+            buf = self.proc.stdout.read(W * H * 3)
+            if len(buf) < W * H * 3:
+                self.close()
+                break
+            self.last = Image.frombuffer("RGB", (W, H), buf).convert("RGBA")
+            self.n += 1
+        return self.last
+
+    def close(self):
+        if self.proc:
+            self.proc.stdout.close()
+            self.proc.wait()
+            self.proc = None
+
+
 # ────────────────────────────── 描画 ──────────────────────────────
 
 class Renderer:
-    def __init__(self):
+    def __init__(self, assets=None):
+        self.assets = assets or Assets(None)
+        self.images = {}
+        self.clip = None  # (パス, 開始時刻, ClipReader)
         self.bgs, self.fgs, self.reveals = toon.make_backgrounds()
         self.dogs = {cid: toon.Dog(cid) for cid in toon.CHARACTERS}
         self.cache = {}
@@ -401,8 +511,27 @@ class Renderer:
             img, ax, ay = self.sprite(cid, st["expr"], pose, mouth, blink, wag, st.get("scale", 1.0), st.get("flip", False))
             vm.compose(frame, img, st["x"] - ax + dx, st["y"] - ay + dy)
 
+    def asset_frame(self, shot, t):
+        """この場面・時刻に使う素材のフレーム（素材がなければ None）と、静止画かどうか"""
+        for start, end, path in self.assets.entries(shot):
+            if start <= t < end or (t >= end and end >= shot.duration):
+                if path.lower().endswith(IMAGE_EXTS):
+                    if path not in self.images:
+                        self.images[path] = fit_image(Image.open(path))
+                    return self.images[path].copy(), True
+                key = (path, getattr(shot, "num", None), start)
+                if not self.clip or self.clip[0] != key:
+                    if self.clip:
+                        self.clip[1].close()
+                    self.clip = (key, ClipReader(path, end - start))
+                return self.clip[1].frame(int((t - start) * FPS)).copy(), False
+        return None, False
+
     def frame(self, shot, t, t_global):
         spec = shot.spec
+        frame, still = self.asset_frame(shot, t)
+        if frame is not None:
+            return self.overlay(shot, t, frame, spec.get("zoom", [1.0, 1.10] if still else [1.0, 1.0]))
         frame = self.bgs[shot.bg].copy()
         if "spot" in spec:
             x = spec["spot"]
@@ -424,7 +553,12 @@ class Renderer:
         self.draw_cast(frame, shot, t, speaking)
         if shot.bg in self.fgs and spec.get("fg", True):
             frame.alpha_composite(self.fgs[shot.bg])
+        return self.overlay(shot, t, frame, spec.get("zoom", [1.0, 1.04]))
 
+    def overlay(self, shot, t, frame, zoom):
+        """演出・カメラ・字幕など、絵の上に重ねるもの"""
+        spec = shot.spec
+        ln = shot.active_line(t)
         fx = set(spec.get("fx", []))
         impact = None
         shake = 0.0
@@ -454,7 +588,7 @@ class Renderer:
             vm.compose(frame, s2, W / 2 - s2.width / 2 + jit, 560 - s2.height / 2)
 
         # カメラ（ゆっくりズーム＋揺れ）
-        z0, z1 = spec.get("zoom", [1.0, 1.04])
+        z0, z1 = zoom
         z = z0 + (z1 - z0) * (t / shot.duration)
         fxp, fyp = spec.get("focus_xy", [W / 2, H * 0.55])
         if shake:
@@ -595,7 +729,11 @@ def render_video(shots, total, renderer, audio_path, out_path):
 def render_thumbnail(story, renderer, voice, path):
     spec = story["thumbnail"]
     shot = Shot(dict(spec, lines=[], hold=10), voice)
-    frame = renderer.frame(shot, 1.0, 1.0).convert("RGBA")
+    thumb = renderer.assets.thumbnail()
+    if thumb:
+        frame = fit_image(Image.open(thumb))
+    else:
+        frame = renderer.frame(shot, 1.0, 1.0).convert("RGBA")
     title = vm.text_sprite(spec["title"], 110, (255, 255, 255), max_w=1000, stroke=12, stroke_fill=(20, 20, 40), accent=(255, 214, 60))
     vm.compose(frame, title, W / 2 - title.width / 2, 1420)
     frame.convert("RGB").save(path)
@@ -608,6 +746,8 @@ def main():
     ap.add_argument("--tts", default="auto", choices=["auto", "voicevox", "edge", "openjtalk"],
                     help="auto は VOICEVOX が起動していれば VOICEVOX、なければ edge-tts → pyopenjtalk の順に使う")
     ap.add_argument("--list-voices", action="store_true", help="VOICEVOX で使える声の一覧を表示")
+    ap.add_argument("--assets", help="Gemini などで作った絵・動画のフォルダ（shot01.png, shot07.mp4 ...）。"
+                                     "省略時は出力先の「素材」フォルダがあれば使う")
     args = ap.parse_args()
 
     if args.list_voices:
@@ -636,7 +776,8 @@ def main():
     shots = [Shot(s, voice) for s in story["shots"]]
     print(f"  └ ✅ 音声エンジン: {voice.engine}")
     t = 0.0
-    for sh in shots:
+    for i, sh in enumerate(shots, 1):
+        sh.num = i
         sh.start = t
         t += sh.duration
     total = t
@@ -646,7 +787,10 @@ def main():
     vm.write_wav(audio_path, build_audio(shots, total))
 
     print("🎨 背景を描画中...")
-    renderer = Renderer()
+    assets = Assets(args.assets or os.path.join(out_dir, "素材"))
+    if assets.files:
+        print(f"🖼️ 素材を使います: {assets.folder}（{len(assets.files)} 個）")
+    renderer = Renderer(assets)
     print("🎬 アニメをレンダリング中...")
     video_path = os.path.join(out_dir, "video.mp4")
     render_video(shots, total, renderer, audio_path, video_path)

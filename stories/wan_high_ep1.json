@@ -580,6 +580,7 @@
           "text": "コタロウ！コタロウ！",
           "say": "コタロウ！コタロウ！",
           "fx": [
+            "impact:当選!!",
             "reveal",
             "flash",
             "confetti"
