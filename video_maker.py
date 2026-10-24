@@ -654,7 +654,7 @@ def build_subtitles(text, voice_dur):
     subs, t = [], LEAD
     for c in chunks:
         d = voice_dur * len(c) / total
-        sprite = text_sprite(c, 50, WHITE, max_w=900, stroke=5, stroke_fill=(2, 6, 23))
+        sprite = fit_text_sprite(c, 50, 960, WHITE, min_size=38, stroke=5, stroke_fill=(2, 6, 23))
         subs.append((t, t + d, sprite))
         t += d
     return subs
@@ -711,7 +711,7 @@ def build_item(scene, item, index, total):
         alt = text_sprite(item["alt"], 40, SLATE_400, bold=False)
         scene.add(Element(alt, W / 2, key_y + 135, press_at, "fade", 0.3))
 
-    desc = text_sprite(item["desc"], 54, SLATE_100, max_w=840, line_gap=1.35)
+    desc = fit_text_sprite(item["desc"], 54, 860, SLATE_100, min_size=40, line_gap=1.35)
     card = card_sprite(940, desc.height + 70)
     card.alpha_composite(desc, ((card.width - desc.width) // 2, 35))
     scene.add(Element(card, W / 2, 1150 + card.height / 2, press_at + 0.15, "rise", 0.45))
