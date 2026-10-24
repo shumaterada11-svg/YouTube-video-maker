@@ -68,7 +68,7 @@ VOICEVOX の声を使った動画は、説明文に「VOICEVOX:キャラ名」�
 ```bash
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-# FFmpeg と日本語フォントが必要（Mac: brew install ffmpeg ／ Ubuntu: apt install ffmpeg fonts-noto-cjk）
+# ffmpeg は imageio-ffmpeg に同梱のものを自動で使う（Linux では日本語フォント fonts-noto-cjk が必要）
 ```
 
 オフラインで音声を作りたい場合は `pip install pyopenjtalk` も入れてください（ビルドに cmake が必要です）。

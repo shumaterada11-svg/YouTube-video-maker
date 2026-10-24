@@ -549,7 +549,7 @@ def build_audio(shots, total):
 
 
 def render_video(shots, total, renderer, audio_path, out_path):
-    cmd = ["ffmpeg", "-y", "-v", "error",
+    cmd = [vm.ffmpeg_exe(), "-y", "-v", "error",
            "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
            "-i", audio_path,
            "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",

@@ -188,10 +188,25 @@ def generate_script(topic, anthropic_key):
 
 # ────────────────────────────── 音声合成 ──────────────────────────────
 
+def ffmpeg_exe():
+    """PATH の ffmpeg、なければ imageio-ffmpeg に同梱の ffmpeg を使う"""
+    import shutil
+
+    path = shutil.which("ffmpeg")
+    if path:
+        return path
+    try:
+        import imageio_ffmpeg
+
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except ImportError:
+        raise RuntimeError("ffmpeg が見つかりません。pip install imageio-ffmpeg を実行してください。")
+
+
 def decode_audio(path):
     """任意の音声ファイルを 48kHz モノラル float32 に変換する"""
     out = subprocess.run(
-        ["ffmpeg", "-v", "error", "-i", path, "-f", "f32le", "-ac", "1", "-ar", str(SR), "-"],
+        [ffmpeg_exe(), "-v", "error", "-i", path, "-f", "f32le", "-ac", "1", "-ar", str(SR), "-"],
         check=True, capture_output=True,
     ).stdout
     return np.frombuffer(out, dtype=np.float32).copy()
@@ -782,7 +797,7 @@ def render_video(scenes, total, audio_path, out_path, handle=None):
     bg = make_background()
     n_frames = int(math.ceil(total * FPS))
     cmd = [
-        "ffmpeg", "-y", "-v", "error",
+        ffmpeg_exe(), "-y", "-v", "error",
         "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
         "-i", audio_path,
         "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",
