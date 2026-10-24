@@ -106,6 +106,39 @@
               "anim": "tremble"
             }
           }
+        },
+        {
+          "who": "leon",
+          "text": "そのノート、みんなの困りごとでびっしりじゃん。それ、会長の仕事だろ？",
+          "say": "そのノート、みんなのこまりごとで、びっしりじゃん。それ、かいちょうのしごとだろ？",
+          "set": {
+            "kotaro": {
+              "pose": "notebook",
+              "expr": "shocked",
+              "anim": "idle"
+            },
+            "leon": {
+              "pose": "point",
+              "expr": "soft"
+            }
+          }
+        },
+        {
+          "who": "kotaro",
+          "text": "…やって、みる。",
+          "say": "やって、みる。",
+          "fx": [
+            "flash"
+          ],
+          "set": {
+            "kotaro": {
+              "expr": "determined"
+            },
+            "leon": {
+              "expr": "happy",
+              "pose": "fist"
+            }
+          }
         }
       ]
     },
@@ -270,7 +303,7 @@
       "lines": [
         {
           "who": "narrator",
-          "text": "放課後。コタロウは今日も、ひとりで校庭のゴミを拾っていた。"
+          "text": "コタロウは毎日、ひとりで校庭のゴミを拾っていた。"
         },
         {
           "who": "narrator",
@@ -401,13 +434,18 @@
       "lines": [
         {
           "who": "gou",
-          "text": "毎朝ゴミを拾うお前を、ずっと見てた。",
-          "say": "まいあさ、ゴミをひろうおまえを、ずっとみてた。"
+          "text": "毎日ゴミを拾うお前を、ずっと見てた。",
+          "say": "まいにち、ゴミをひろうおまえを、ずっとみてた。"
         },
         {
           "who": "gou",
-          "text": "お前を引っ張り出すために、出たんだよ。",
-          "say": "おまえを、ひっぱりだすために、でたんだよ。"
+          "text": "不良どもを投票に来させるには、俺が出るしかなかった。",
+          "say": "ふりょうどもを、とうひょうにこさせるには、おれがでるしか、なかった。"
+        },
+        {
+          "who": "gou",
+          "text": "会長は、お前がやれ。",
+          "say": "かいちょうは、おまえがやれ。"
         }
       ],
       "fg": false
@@ -488,59 +526,103 @@
           "x": 820,
           "y": 1360,
           "pose": "crossed",
-          "expr": "soft",
-          "scale": 1.0
+          "expr": "cool",
+          "scale": 1.0,
+          "anim": "idle"
         },
         {
           "id": "leon",
           "x": 250,
           "y": 1360,
-          "pose": "point",
-          "expr": "wink",
-          "scale": 1.0
+          "pose": "stand",
+          "expr": "normal",
+          "scale": 1.0,
+          "anim": "idle"
         },
         {
           "id": "kotaro",
           "x": 540,
           "y": 1430,
-          "pose": "cheer_b",
-          "expr": "moved",
-          "anim": "jump",
+          "pose": "shy",
+          "expr": "shy",
+          "anim": "tremble",
           "scale": 1.15
         },
         {
           "id": "pom1",
           "x": 110,
           "y": 1500,
-          "pose": "cheer_a",
-          "expr": "happy",
-          "anim": "cheer",
+          "pose": "stand",
+          "expr": "normal",
+          "anim": "idle",
           "scale": 0.85
         },
         {
           "id": "pom3",
           "x": 970,
           "y": 1500,
-          "pose": "cheer_a",
-          "expr": "happy",
-          "anim": "cheer",
+          "pose": "stand",
+          "expr": "normal",
+          "anim": "idle",
           "scale": 0.85,
           "flip": true
         }
       ],
       "lines": [
         {
+          "who": "narrator",
+          "text": "そして、開票の結果は…",
+          "say": "そして、かいひょうのけっかは。",
+          "pause": 0.4
+        },
+        {
           "who": "poms",
           "text": "コタロウ！コタロウ！",
           "say": "コタロウ！コタロウ！",
           "fx": [
+            "reveal",
+            "flash",
             "confetti"
-          ]
+          ],
+          "set": {
+            "kotaro": {
+              "pose": "cheer_b",
+              "expr": "moved",
+              "anim": "jump"
+            },
+            "leon": {
+              "pose": "fist",
+              "expr": "happy",
+              "anim": "jump"
+            },
+            "gou": {
+              "pose": "crossed",
+              "expr": "soft",
+              "anim": "idle"
+            },
+            "pom1": {
+              "pose": "cheer_a",
+              "expr": "happy",
+              "anim": "cheer"
+            },
+            "pom3": {
+              "pose": "cheer_a",
+              "expr": "happy",
+              "anim": "cheer"
+            }
+          }
         },
         {
           "who": "leon",
           "text": "参謀のオレのおかげっしょ☆",
-          "say": "さんぼうの、オレのおかげっしょ！"
+          "say": "さんぼうの、オレのおかげっしょ！",
+          "set": {
+            "leon": {
+              "pose": "point",
+              "expr": "wink",
+              "anim": "idle"
+            }
+          }
         }
       ]
     },
@@ -576,7 +658,8 @@
           "pause": 0.3
         }
       ],
-      "hold": 4.5
+      "hold": 4.5,
+      "revealed": true
     }
   ]
 }

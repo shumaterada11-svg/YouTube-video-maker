@@ -339,7 +339,7 @@ class Shot:
 
 class Renderer:
     def __init__(self):
-        self.bgs, self.fgs = toon.make_backgrounds()
+        self.bgs, self.fgs, self.reveals = toon.make_backgrounds()
         self.dogs = {cid: toon.Dog(cid) for cid in toon.CHARACTERS}
         self.cache = {}
         self.focus = [toon.make_focus_lines(i) for i in range(3)]
@@ -409,6 +409,12 @@ class Renderer:
             if x not in self.spots:
                 self.spots[x] = toon.make_spotlight(x)
             frame.alpha_composite(self.spots[x])
+
+        if shot.bg in self.reveals:
+            t_rev = 0.0 if spec.get("revealed") else next(
+                (l2["t0"] for l2 in shot.lines if "reveal" in l2.get("fx", [])), None)
+            if t_rev is not None and t >= t_rev:
+                frame.alpha_composite(self.reveals[shot.bg])
 
         ln = shot.active_line(t)
         speaking = None
@@ -486,10 +492,25 @@ class Renderer:
         img.alpha_composite(txt, (45, 20))
         return img
 
+    @staticmethod
+    def break_subtitle(text, size=50, max_w=900):
+        """1行に収まらない字幕は、句読点の位置で改行する（単語の途中で折れないように）"""
+        font = vm.get_font(size)
+        if "\n" in text or font.getlength(text) <= max_w:
+            return text
+        segs = re.findall(r"[^、。！？!?…]+[、。！？!?…☆]*|[、。！？!?…☆]+", text)
+        lines = [""]
+        for seg in segs:
+            if lines[-1] and font.getlength(lines[-1] + seg) > max_w:
+                lines.append(seg)
+            else:
+                lines[-1] += seg
+        return "\n".join(lines)
+
     def subtitle_sprite(self, ln):
         v = VOICES[ln["who"]]
         narr = ln["who"] == "narrator"
-        txt = vm.text_sprite(ln["text"], 50, (255, 255, 255), max_w=900, line_gap=1.3)
+        txt = vm.text_sprite(self.break_subtitle(ln["text"]), 50, (255, 255, 255), max_w=900, line_gap=1.3)
         box_h = max(150, txt.height + 60)
         img = Image.new("RGBA", (1000, box_h + 40), (0, 0, 0, 0))
         d = ImageDraw.Draw(img)

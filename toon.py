@@ -629,14 +629,7 @@ def bg_results(img, pen):
     pen.rrect(150, 300, 930, 900, 10, (170, 120, 76), outline=(110, 74, 44), width=8)
     pen.rrect(180, 330, 900, 870, 4, (255, 255, 252), outline=None)
     pen.text((540, 400), "生徒会長選挙 結果", 50, (60, 60, 70))
-    pen.circle(300, 600, 80, None, outline=(220, 30, 40), width=10)
-    pen.text((300, 600), "当選", 58, (220, 30, 40))
-    pen.text((620, 600), "コタロウ", 104, (30, 30, 40))
-    pen.text((540, 790), "おめでとう！", 52, (220, 30, 40))
-    for i in range(8):
-        a = 2 * math.pi * i / 8
-        pen.circle(210 + math.cos(a) * 34, 360 + math.sin(a) * 34, 26, (230, 40, 60), outline=None)
-    pen.circle(210, 360, 24, (255, 210, 60), outline=None)
+    pen.text((540, 640), "？", 200, (200, 200, 210))
     cols = [(240, 70, 80), (255, 200, 40), (60, 160, 240), (90, 200, 120)]
     pen.line([(0, 150), (540, 210), (1080, 150)], (90, 80, 70), 4)
     for i in range(14):
@@ -645,9 +638,22 @@ def bg_results(img, pen):
         pen.poly([(x - 30, y), (x + 30, y), (x, y + 60)], cols[i % 4], outline=None)
 
 
+def results_paper(pen):
+    """結果発表で背景の掲示板に重ねる当選の貼り紙"""
+    pen.rrect(180, 450, 900, 870, 4, (255, 255, 252), outline=None)
+    pen.circle(300, 600, 80, None, outline=(220, 30, 40), width=10)
+    pen.text((300, 600), "当選", 58, (220, 30, 40))
+    pen.text((620, 600), "コタロウ", 104, (30, 30, 40))
+    pen.text((540, 790), "おめでとう！", 52, (220, 30, 40))
+    for i in range(8):
+        a = 2 * math.pi * i / 8
+        pen.circle(210 + math.cos(a) * 34, 360 + math.sin(a) * 34, 26, (230, 40, 60), outline=None)
+    pen.circle(210, 360, 24, (255, 210, 60), outline=None)
+
+
 def make_backgrounds():
-    """背景画像と前景画像（演台など）を作る"""
-    bgs, fgs = {}, {}
+    """背景・前景（演台など）・結果発表で重ねる貼り紙の画像を作る"""
+    bgs, fgs, reveals = {}, {}, {}
     for name in ("school_gate", "hallway", "sunset", "stage", "results"):
         img = Image.new("RGBA", (W * SS, H * SS), (0, 0, 0, 255))
         pen = Pen(img, SS)
@@ -668,8 +674,11 @@ def make_backgrounds():
             fgs[name] = fg.resize((W, H), Image.LANCZOS)
         elif name == "results":
             bg_results(img, pen)
+            paper = Image.new("RGBA", (W * SS, H * SS), (0, 0, 0, 0))
+            results_paper(Pen(paper, SS))
+            reveals[name] = paper.resize((W, H), Image.LANCZOS)
         bgs[name] = img.resize((W, H), Image.LANCZOS)
-    return bgs, fgs
+    return bgs, fgs, reveals
 
 
 # ────────────────────────────── エフェクト ──────────────────────────────
