@@ -24,6 +24,38 @@ python story_maker.py --story stories/wan_high_ep1.json
 | 動き | idle, walk, jump, tremble, cheer, wave |
 | BGM | normal, tense, happy |
 
+### 声の設定
+
+声は次の順で自動的に選ばれます（`--tts` で固定も可能）。
+
+1. **VOICEVOX**（無料・キャラ声が数十種類）: アプリが起動していれば自動で使います
+2. **edge-tts**（無料・男女1種類ずつ）: インターネット接続が必要
+3. **pyopenjtalk**（オフライン・機械的な声）
+
+VOICEVOX を使う手順:
+
+1. https://voicevox.hiroshiba.jp/ から VOICEVOX をインストールして起動する（起動したままにする）
+2. `python story_maker.py --list-voices` で使える声を確認する
+3. `python story_maker.py --story stories/wan_high_ep1.json` を実行する
+
+キャラごとの声は `story_maker.py` の `VOICES` が初期値です。台本 JSON に `voices` を書くと、その話だけ上書きできます。
+
+```json
+"voices": {
+  "gou": {"voicevox": "青山龍星/ノーマル", "vv_speed": 0.9, "vv_pitch": -0.05},
+  "kotaro": {"voicevox": "白上虎太郎/びくびく"}
+}
+```
+
+| 項目 | 内容 |
+| --- | --- |
+| `voicevox` | 「キャラ名/スタイル」（スタイル名を省略すると最初のスタイル） |
+| `vv_speed` / `vv_pitch` / `vv_intonation` | 話速（1.0 が標準）／高さ（-0.15〜0.15）／抑揚（1.0 が標準） |
+| `voice` / `pitch` / `rate` | edge-tts の声（`ja-JP-KeitaNeural` など）／高さ（`"+10Hz"`）／速さ（`"+10%"`） |
+| `half_tone` / `speed` | pyopenjtalk の高さ（半音）／速さ |
+
+VOICEVOX の声を使った動画は、説明文に「VOICEVOX:キャラ名」のクレジットが必要です。`youtube.txt` に自動で追記されます。
+
 ## ショートカット解説動画（video_maker.py）
 
 - 台本: JSON で用意するか、テーマを渡して Claude に書かせる

@@ -21,26 +21,120 @@ from video_maker import FPS, SR, H, W
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 話者ごとの声（edge-tts 用と pyopenjtalk 用）・名札
+# 話者ごとの声と名札
+#   voicevox : VOICEVOX の「キャラ名/スタイル」（--list-voices で一覧表示）
+#   vv_speed / vv_pitch : VOICEVOX の話速（1.0が標準）・高さ（-0.15〜0.15）
+#   voice / pitch / rate : edge-tts の声・高さ・速さ
+#   half_tone / speed : pyopenjtalk の高さ（半音）・速さ
+# 台本JSONの "voices" で、話ごとに上書きできる
 VOICES = {
-    "narrator": dict(name="", voice="ja-JP-NanamiNeural", pitch="+0Hz", rate="+5%", half_tone=0.0, speed=1.15),
-    "kotaro": dict(name="コタロウ", color=(176, 104, 54), voice="ja-JP-KeitaNeural", pitch="+14Hz", rate="+0%", half_tone=-1.0, speed=1.1),
-    "leon": dict(name="レオン", color=(219, 39, 119), voice="ja-JP-KeitaNeural", pitch="+4Hz", rate="+18%", half_tone=-2.5, speed=1.3),
-    "gou": dict(name="ゴウ", color=(190, 30, 45), voice="ja-JP-KeitaNeural", pitch="-20Hz", rate="-8%", half_tone=-7.0, speed=0.95),
-    "poms": dict(name="チア部", color=(234, 88, 12), voice="ja-JP-NanamiNeural", pitch="+30Hz", rate="+15%", half_tone=3.0, speed=1.3,
+    "narrator": dict(name="", voicevox="冥鳴ひまり/ノーマル",
+                     voice="ja-JP-NanamiNeural", pitch="+0Hz", rate="+5%", half_tone=0.0, speed=1.15),
+    "kotaro": dict(name="コタロウ", color=(176, 104, 54), voicevox="白上虎太郎/びくびく",
+                   voice="ja-JP-KeitaNeural", pitch="+14Hz", rate="+0%", half_tone=-1.0, speed=1.1),
+    "leon": dict(name="レオン", color=(219, 39, 119), voicevox="玄野武宏/喜び", vv_speed=1.15,
+                 voice="ja-JP-KeitaNeural", pitch="+4Hz", rate="+18%", half_tone=-2.5, speed=1.3),
+    "gou": dict(name="ゴウ", color=(190, 30, 45), voicevox="青山龍星/ノーマル", vv_speed=0.95,
+                voice="ja-JP-KeitaNeural", pitch="-20Hz", rate="-8%", half_tone=-7.0, speed=0.95),
+    "poms": dict(name="チア部", color=(234, 88, 12), voicevox="ずんだもん/あまあま", vv_speed=1.15,
+                 voice="ja-JP-NanamiNeural", pitch="+30Hz", rate="+15%", half_tone=3.0, speed=1.3,
                  members=["pom1", "pom2", "pom3"], chorus=True),
-    "yanki": dict(name="不良たち", color=(71, 85, 105), voice="ja-JP-KeitaNeural", pitch="-6Hz", rate="+12%", half_tone=-5.0, speed=1.25,
+    "yanki": dict(name="不良たち", color=(71, 85, 105), voicevox="剣崎雌雄/ノーマル", vv_speed=1.1,
+                  voice="ja-JP-KeitaNeural", pitch="-6Hz", rate="+12%", half_tone=-5.0, speed=1.25,
                   members=["yanki1", "yanki2"], chorus=True),
 }
 
 GAP = 0.22  # セリフ同士の間
+VOICEVOX_URL = os.environ.get("VOICEVOX_URL", "http://127.0.0.1:50021")
 
 
 # ────────────────────────────── 音声 ──────────────────────────────
 
+class VoicevoxClient:
+    """ローカルで起動した VOICEVOX（アプリ or エンジン）に HTTP で話しかける"""
+
+    def __init__(self, url=VOICEVOX_URL):
+        import urllib.request
+
+        self.url = url.rstrip("/")
+        # localhost 宛てなのでプロキシを通さない
+        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        self._speakers = None
+        self._ids = {}
+
+    def _req(self, path, data=None, timeout=60, json_body=None):
+        import urllib.request
+
+        headers = {}
+        if json_body is not None:
+            data = json.dumps(json_body).encode("utf-8")
+            headers["Content-Type"] = "application/json"
+        req = urllib.request.Request(self.url + path, data=data, headers=headers,
+                                     method="POST" if data is not None else "GET")
+        with self.opener.open(req, timeout=timeout) as r:
+            return r.read()
+
+    def available(self):
+        try:
+            self._req("/version", timeout=1.5)
+            return True
+        except Exception:
+            return False
+
+    def speakers(self):
+        if self._speakers is None:
+            self._speakers = json.loads(self._req("/speakers"))
+        return self._speakers
+
+    def style_id(self, spec):
+        """「キャラ名/スタイル」をスタイルIDに変換する（数字ならそのまま）"""
+        if isinstance(spec, int) or str(spec).isdigit():
+            return int(spec)
+        if spec in self._ids:
+            return self._ids[spec]
+        name, _, style = str(spec).partition("/")
+        for sp in self.speakers():
+            if sp["name"] == name:
+                styles = sp["styles"]
+                hit = next((st for st in styles if st["name"] == style), None)
+                if hit is None:
+                    hit = styles[0]
+                    if style:
+                        print(f"  └ ⚠️ {name} にスタイル「{style}」がないので「{hit['name']}」を使います")
+                self._ids[spec] = hit["id"]
+                return hit["id"]
+        names = "、".join(sp["name"] for sp in self.speakers())
+        raise RuntimeError(f"VOICEVOX に「{name}」が見つかりません。使えるキャラ: {names}")
+
+    def tts(self, text, v):
+        from urllib.parse import quote
+
+        sid = self.style_id(v["voicevox"])
+        query = json.loads(self._req(f"/audio_query?text={quote(text)}&speaker={sid}", data=b""))
+        query["speedScale"] = v.get("vv_speed", 1.0)
+        query["pitchScale"] = v.get("vv_pitch", 0.0)
+        query["intonationScale"] = v.get("vv_intonation", 1.0)
+        return self._req(f"/synthesis?speaker={sid}", json_body=query)
+
+
 class Voice:
     def __init__(self, engine="auto"):
         self.engine = engine
+        self.vv = VoicevoxClient()
+        self.credits = []  # VOICEVOX の利用規約で必要なクレジット表記
+
+    def _voicevox(self, text, v):
+        import tempfile
+
+        wav = self.vv.tts(text, v)
+        name = str(v["voicevox"]).partition("/")[0]
+        if not str(name).isdigit() and name not in self.credits:
+            self.credits.append(name)
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "v.wav")
+            with open(path, "wb") as f:
+                f.write(wav)
+            return vm.decode_audio(path)
 
     def _edge(self, text, v):
         import asyncio
@@ -68,6 +162,10 @@ class Voice:
 
     def speak(self, who, text):
         v = VOICES[who]
+        if self.engine == "auto" and self.vv.available():
+            self.engine = "voicevox"
+        if self.engine == "voicevox":
+            x = self._voicevox(text, v)
         if self.engine in ("auto", "edge"):
             try:
                 x = self._edge(text, v)
@@ -484,13 +582,31 @@ def render_thumbnail(story, renderer, voice, path):
 
 def main():
     ap = argparse.ArgumentParser(description="犬キャラのショートアニメを生成")
-    ap.add_argument("--story", required=True, help="台本JSONのパス")
+    ap.add_argument("--story", help="台本JSONのパス")
     ap.add_argument("--out", default=os.path.join(BASE_DIR, "output"))
-    ap.add_argument("--tts", default="auto", choices=["auto", "edge", "openjtalk"])
+    ap.add_argument("--tts", default="auto", choices=["auto", "voicevox", "edge", "openjtalk"],
+                    help="auto は VOICEVOX が起動していれば VOICEVOX、なければ edge-tts → pyopenjtalk の順に使う")
+    ap.add_argument("--list-voices", action="store_true", help="VOICEVOX で使える声の一覧を表示")
     args = ap.parse_args()
+
+    if args.list_voices:
+        vv = VoicevoxClient()
+        if not vv.available():
+            raise SystemExit(f"VOICEVOX に接続できません（{VOICEVOX_URL}）。アプリを起動してください。")
+        for sp in vv.speakers():
+            print(f"{sp['name']}: " + "、".join(f"{st['name']}" for st in sp["styles"]))
+        return
+    if not args.story:
+        ap.error("--story を指定してください")
+    if args.tts == "voicevox" and not VoicevoxClient().available():
+        raise SystemExit(f"VOICEVOX に接続できません（{VOICEVOX_URL}）。アプリを起動してください。")
 
     with open(args.story, "r", encoding="utf-8") as f:
         story = json.load(f)
+    for who, ov in story.get("voices", {}).items():
+        VOICES.setdefault(who, dict(name=who, color=(100, 116, 139), voice="ja-JP-NanamiNeural", pitch="+0Hz",
+                                    rate="+0%", half_tone=0.0, speed=1.1, voicevox="ずんだもん/ノーマル"))
+        VOICES[who].update(ov)
     out_dir = os.path.join(args.out, story["slug"])
     os.makedirs(out_dir, exist_ok=True)
 
@@ -517,7 +633,11 @@ def main():
 
     if "thumbnail" in story:
         render_thumbnail(story, renderer, voice, os.path.join(out_dir, "thumbnail.png"))
-    vm.write_youtube_meta(story, os.path.join(out_dir, "youtube.txt"))
+    meta_path = os.path.join(out_dir, "youtube.txt")
+    vm.write_youtube_meta(story, meta_path)
+    if voice.credits:
+        with open(meta_path, "a", encoding="utf-8") as f:
+            f.write("\n【音声】説明文に必ず入れてください\n" + "\n".join(f"VOICEVOX:{n}" for n in voice.credits) + "\n")
     print(f"\n🎉 完成: {video_path}")
 
 
